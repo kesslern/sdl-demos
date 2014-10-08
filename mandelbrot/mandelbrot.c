@@ -202,35 +202,35 @@ bool user_input(SDL_Surface *screen, window *win, SDL_Event input)
   long double delta;
 
   switch (input.key.keysym.sym) {
-  case SDLK_a:
+  case SDLK_LEFT:
     /* Pan to the left. */
     delta = (win->max_x - win->min_x) / WIDTH;
     win->max_x -= delta;
     win->min_x -= delta;
     scroll(screen, win, LEFT);
     break;
-  case SDLK_e:
+  case SDLK_RIGHT:
     /* Pan to the right. */
     delta = (win->max_x - win->min_x) / WIDTH;
     win->max_x += delta;
     win->min_x += delta;
     scroll(screen, win, RIGHT);
     break;
-  case SDLK_o:
+  case SDLK_DOWN:
     /* Pan down. */
     delta = (win->max_y - win->min_y)/ HEIGHT;
     win->max_y += delta;
     win->min_y += delta;
     scroll(screen, win, DOWN);
     break;
-  case SDLK_COMMA:
+  case SDLK_UP:
     /* Pan up. */
     delta = (win->max_y - win->min_y) / HEIGHT;
     win->max_y -= delta;
     win->min_y -= delta;
     scroll(screen, win, UP);
     break;
-  case SDLK_q:
+  case SDLK_PAGEUP:
     /* Zoom out, y direction. */
     delta = ZOOM_PERCENTAGE * (win->max_y - win->min_y);
     win->max_y += delta;
@@ -241,7 +241,7 @@ bool user_input(SDL_Surface *screen, window *win, SDL_Event input)
     win->min_x -= delta;
     return true;
     break;
-  case SDLK_PERIOD:
+  case SDLK_PAGEDOWN:
     /* Zoom in, y direction. */
     delta = ZOOM_PERCENTAGE * (win->max_y - win->min_y);
     win->max_y -= delta;
@@ -251,9 +251,6 @@ bool user_input(SDL_Surface *screen, window *win, SDL_Event input)
     win->max_x -= delta;
     win->min_x += delta;
     return true;
-    break;
-  case SDLK_c:
-    create_palette(screen, M_PI*2/COLORS*3, 0, M_PI*2/3, M_PI*4/3, 128, 127, COLORS);
     break;
   default:
     break;
@@ -336,7 +333,7 @@ int is_in_set(complex *c)
       return i;
     }
 
-    if (fabsl(lastc.a - c->a) < 0.001 && fabsl(lastc.b - c->b) < 0.001) {
+    if (fabsl(lastc.a - c->a) < 0.000001 && fabsl(lastc.b - c->b) < 0.000001) {
       return 0;
     }
 
