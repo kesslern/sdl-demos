@@ -7,6 +7,10 @@
 #define BPP 4
 #define DEPTH 32
 
+/*
+ * The y offset is expected to be y=y_coord*width, so one less multiplication
+ * needs to be performed here.
+ */
 void setpixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
 {
     Uint32 *pixmem32;
