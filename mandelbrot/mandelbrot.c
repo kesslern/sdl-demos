@@ -32,10 +32,45 @@ struct point_t {
 typedef struct point_t point;
 typedef struct window_t window;
 
-int is_in_set(complex *c);
-complex scale(window *win, SDL_Surface *screen, point *p);
+complex scale(window *win, SDL_Surface *screen, point *p)
+{
+  /* Pass the win struct by address for speed. */
+  complex c;
 
-void setpixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
+  c.a = (long double) p->x / screen->w
+        * (win->max_x - win->min_x) + win->min_x;
+  c.b = (long double) p->y / screen->h
+        * (win->max_y - win->min_y) + win->min_y;
+
+  return c;
+}
+
+int is_in_set(complex *c)
+{
+  /* We want to store the final value of c in the original
+   * place in memory so we can use that value in the bmp
+   * color generation process. */
+  complex z = *c;
+  complex lastc;
+  int i = 0;
+
+  while (i++ <= MAX_ITERATIONS) {
+    *c = complex_add(complex_multiply(*c, *c), z);
+    if (c->a*c->a + c->b*c->b >= 4.0) {
+      return i;
+    }
+
+    if (fabsl(lastc.a - c->a) < 0.000001 && fabsl(lastc.b - c->b) < 0.000001) {
+      return 0;
+    }
+
+    lastc = *c;
+  }
+
+  return 0;
+}
+
+void set_pixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
 {
     Uint32 *pixmem32;
     Uint32 colour;
@@ -46,14 +81,14 @@ void setpixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
     *pixmem32 = colour;
 }
 
-void setcolor(SDL_Surface *screen, int x, int y, Uint32* color)
+void set_color(SDL_Surface *screen, int x, int y, Uint32* color)
 {
   Uint32 *pixmem32;
   pixmem32 = (Uint32*) screen->pixels  + y + x;
   *pixmem32 = *color;  
 }
 
-void DrawScreen(SDL_Surface *screen, window *win)
+void draw_screen(SDL_Surface *screen, window *win)
 {
     int ytimesw = 0;
     point p;
@@ -68,9 +103,9 @@ void DrawScreen(SDL_Surface *screen, window *win)
         for (p.x = 0; p.x < screen->w; p.x++ ) {
 	  c = scale(win, screen, &p);
 	  if ((i = is_in_set(&c))) {
-	    setcolor(screen, p.x, ytimesw, win->palette + i%COLORS);
+	    set_color(screen, p.x, ytimesw, win->palette + i%COLORS);
 	  } else {
-	    setpixel(screen, p.x, ytimesw, 0, 0, 0);
+	    set_pixel(screen, p.x, ytimesw, 0, 0, 0);
 	  }
         }
       ytimesw += screen->pitch/BPP;
@@ -118,9 +153,9 @@ void draw_edge(SDL_Surface *screen, window *win, int dir)
     for (p.x = 0; p.x < WIDTH; p.x++) {
       c = scale(win, screen, &p);
       if ((i = is_in_set(&c))) {
-	setcolor(screen, p.x, ytimesw, win->palette + i%COLORS);
+	set_color(screen, p.x, ytimesw, win->palette + i%COLORS);
       } else {
-	setpixel(screen, p.x, ytimesw, 0, 0, 0);
+	set_pixel(screen, p.x, ytimesw, 0, 0, 0);
       }
     }
   } else {
@@ -130,9 +165,9 @@ void draw_edge(SDL_Surface *screen, window *win, int dir)
     for (p.y = 0; p.y < HEIGHT; p.y++) {
       c = scale(win, screen, &p);
       if ((i = is_in_set(&c))) {
-	setcolor(screen, p.x, ytimesw, win->palette + i%COLORS);
+	set_color(screen, p.x, ytimesw, win->palette + i%COLORS);
       } else {
-	setpixel(screen, p.x, ytimesw, 0, 0, 0);
+	set_pixel(screen, p.x, ytimesw, 0, 0, 0);
       }
       ytimesw += screen->pitch / BPP;
     }
@@ -280,7 +315,7 @@ int main(int argc, char* argv[])
   win.palette = create_palette(screen, M_PI*2/COLORS*3, 0, M_PI*2/3, M_PI*4/3, 128, 127, COLORS);
 
   
-  DrawScreen(screen, &win);
+  draw_screen(screen, &win);
 
   while(!quit) {
     SDL_PollEvent(&event);
@@ -294,7 +329,7 @@ int main(int argc, char* argv[])
 	  quit = true;
 	} else {
 	  if (user_input(screen, &win, event)) {
-	    DrawScreen(screen, &win);
+	    draw_screen(screen, &win);
 	  }
 	}
 	break;
@@ -305,40 +340,3 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-complex scale(window *win, SDL_Surface *screen, point *p)
-{
-  /* Pass the win struct by address for speed. */
-  complex c;
-
-  c.a = (long double) p->x / screen->w
-        * (win->max_x - win->min_x) + win->min_x;
-  c.b = (long double) p->y / screen->h
-        * (win->max_y - win->min_y) + win->min_y;
-
-  return c;
-}
-
-int is_in_set(complex *c)
-{
-  /* We want to store the final value of c in the original
-   * place in memory so we can use that value in the bmp
-   * color generation process. */
-  complex z = *c;
-  complex lastc;
-  int i = 0;
-
-  while (i++ <= MAX_ITERATIONS) {
-    *c = complex_add(complex_multiply(*c, *c), z);
-    if (c->a*c->a + c->b*c->b >= 4.0) {
-      return i;
-    }
-
-    if (fabsl(lastc.a - c->a) < 0.000001 && fabsl(lastc.b - c->b) < 0.000001) {
-      return 0;
-    }
-
-    lastc = *c;
-  }
-
-  return 0;
-}
