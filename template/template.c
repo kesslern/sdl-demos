@@ -11,7 +11,7 @@
  * The y offset is expected to be y=y_coord*width, so one less multiplication
  * needs to be performed here.
  */
-void setpixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
+void set_pixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
 {
     Uint32 *pixmem32;
     Uint32 colour;
@@ -22,7 +22,7 @@ void setpixel(SDL_Surface *screen, int x, int y, Uint8 r, Uint8 g, Uint8 b)
     *pixmem32 = colour;
 }
 
-void DrawScreen(SDL_Surface *screen)
+void draw_screen(SDL_Surface *screen)
 {
     int ytimesw = 0;
     int x, y;
@@ -30,10 +30,10 @@ void DrawScreen(SDL_Surface *screen)
     if (SDL_MUSTLOCK(screen)) {
         if (SDL_LockSurface(screen) < 0) return;
     }
-    printf("pitch: %d\n", screen->pitch);
+
     for (y = 0; y < screen->h; y++ ) {
       for (x = 0; x < screen->w; x++ ) {
-	setpixel(screen, x, ytimesw, 100, x % 255, y % 100 + 50);
+	set_pixel(screen, x, ytimesw, 100, x % 255, y % 100 + 50);
       }
       ytimesw += screen->pitch/BPP;
     }
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  DrawScreen(screen);
+  draw_screen(screen);
 
   while(!quit) {
     SDL_PollEvent(&event);
