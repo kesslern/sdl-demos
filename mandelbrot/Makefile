@@ -3,7 +3,7 @@ CFLAGS=-c -Wall
 LDFLAGS=-lm -lSDL
 SOURCES=complex.c mandelbrot.c
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=mandelbrot
+EXECUTABLE=mandelbrot.out
 
 all: $(SOURCES) $(EXECUTABLE)
 

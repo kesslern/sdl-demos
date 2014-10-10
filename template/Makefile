@@ -3,7 +3,7 @@ CFLAGS=-c -Wall
 LDFLAGS=-lSDL
 SOURCES=template.c
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=template
+EXECUTABLE=template.out
 
 all: $(SOURCES) $(EXECUTABLE)
 
