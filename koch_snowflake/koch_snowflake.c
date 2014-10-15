@@ -17,77 +17,35 @@ void set_color(SDL_Surface *screen, point p, Uint32 color)
 
 void draw_line(SDL_Surface *screen, point p1, point p2, Uint32 color)
 {
-  int deltax;
-  int deltay;
-  point plot;
-  double error = 0;
-  double delta;
-  
-  if (p2.x < p1.x) {
-    plot = p1;
-    p1 = p2;
-    p2 = plot;
+  /* From Rosetta Code */
+  int dx = abs(p2.x-p1.x), sx = p1.x<p2.x ? 1 : -1;
+  int dy = abs(p2.y-p1.y), sy = p1.y<p2.y ? 1 : -1;
+  int err = (dx>dy ? dx : -dy)/2, e2;
+
+  for(;;){
+    set_color(screen, p1, color);
+    if (p1.x==p2.x && p1.y==p2.y) break;
+    e2 = err;
+    if (e2 >-dx) { err -= dy; p1.x += sx; }
+    if (e2 < dy) { err += dx; p1.y += sy; }
   }
-
-  deltax = p2.x - p1.x;
-  deltay = p2.y - p1.y;
-  delta = (double) deltay / deltax;
-  
-  if (delta < 0) delta *= -1;
-
-  plot.y = p1.y;
-  for (plot.x = p1.x; plot.x < p2.x; plot.x++) {
-    set_color(screen, plot, color);
-      
-    error += delta;
-    if (error > 0.5) {
-      ++plot.y;
-      error -= 1.0;
-    }
-  }
- 
-  if (deltay == 0) exit(1);
-}
-
-void clear_screen(SDL_Surface *screen)
-{
-  if (SDL_MUSTLOCK(screen)) {
-    if (SDL_LockSurface(screen) < 0) return;
-  }
-
-  SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
-
-  if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
-  SDL_Flip(screen);
 }
 
 /*
  * Contains logic to draw the screen on the provided SDL_Surface.
  */
-void draw_screen(SDL_Surface *screen)
+void draw_screen(SDL_Surface *screen, list *ll)
 {
-  point p;
-  point p2;
-
-  p.x = rand() % screen->w;
-  p.y = rand() % screen->h;
-  p2.x = rand() % screen->w;
-  p2.y =rand() % screen->h;
+  node* start = ll->head->next;
   
   if (SDL_MUSTLOCK(screen)) {
     if (SDL_LockSurface(screen) < 0) return;
   }
 
-  /*  for (p.y = 0; p.y < screen->h; p.y++ ) {
-    for (p.x = 0; p.x < screen->w; p.x++ ) {
-      set_color(screen, p, SDL_MapRGB(screen->format, 100, p.x % 255, p.y % 100 + 50));
-    }
-    }*/
-
-  clear_screen(screen);
-  draw_line(screen, p, p2, SDL_MapRGB(screen->format, 100, 125, 150));
-  set_color(screen, p, SDL_MapRGB(screen->format, 255, 255, 255));
-  set_color(screen, p2, SDL_MapRGB(screen->format, 255, 255, 255));
+  while (start->next->next != NULL) {
+    draw_line(screen, start->p, start->next->p, SDL_MapRGB(screen->format, rand()%255, rand()%255, rand()%255));
+    start = start->next;
+  }
 
   if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
   SDL_Flip(screen);
@@ -107,30 +65,22 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  draw_screen(screen);
-  
   point p1;
   node* current;
   p1.x = 10;
   p1.y = 10;
 
   list* list = list_create();
-  current = list_insert(list->head, p1);
-  p1.x += 10;
-  p1.y += 10;
-  current = list_insert(current, p1);
-  p1.x += 10;
-  p1.y -= 10;
-  current = list_insert(current, p1);
+  int i;
   current = list->head;
-
-  while (current->next->next != NULL) {
-    current = current->next;
-    printf("x: %d, y:%d\n", current->p.x, current->p.y);
+  for (i = 0; i < 10000; i++) {
+    p1.x = rand() % screen->w;
+    p1.y = rand() % screen->h;
+    current = list_insert(current, p1);
   }
-  
-  list_delete(list);
 
+  draw_screen(screen, list);
+  
   while(!quit) {
     SDL_PollEvent(&event);
 
@@ -145,6 +95,8 @@ int main(int argc, char* argv[])
 	break;
       }
   }
+
+  list_delete(list);
 
   SDL_Quit();
   return 0;

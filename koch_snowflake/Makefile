@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-c -Wall -g
+CFLAGS=-c -Wall -Wconversion -g
 LDFLAGS=-lSDL -lm
 SOURCES=koch_snowflake.c list.c
 OBJECTS=$(SOURCES:.c=.o)
