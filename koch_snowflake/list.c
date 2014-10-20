@@ -3,7 +3,7 @@
 
 list* list_create()
 {
-  list* ll = malloc(sizeof(ll));
+  list* ll = malloc(sizeof(list));
 
   ll->head = malloc(sizeof(node));
   ll->tail = malloc(sizeof(node));
