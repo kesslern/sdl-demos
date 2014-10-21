@@ -45,7 +45,11 @@ void draw_screen(SDL_Surface *screen, list *ll)
   SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 
   while (start->next->next != NULL) {
-    draw_line(screen, start->p, start->next->p, SDL_MapRGB(screen->format, rand()%255, rand()%255, rand()%255));
+    draw_line(screen, start->p, start->next->p,
+	      SDL_MapRGB(screen->format,
+			 (Uint8) rand()%255,
+			 (Uint8) rand()%255,
+			 (Uint8) rand()%255));
     start = start->next;
   }
 
@@ -65,15 +69,15 @@ void iterate(node* n)
   new.x = p1.x + xlen / 3;
   new.y = p1.y + ylen / 3;
   node* current = list_insert(n, new);
-  new.x = p1.x + 2.0 * xlen / 3;
-  new.y = p1.y + 2.0 * ylen / 3;
+  new.x = p1.x + 2 * xlen / 3;
+  new.y = p1.y + 2 * ylen / 3;
   list_insert(current, new);
 
-  int len = sqrt(xlen*xlen + ylen*ylen);
-  double theta = atan(ylen / xlen) + M_PI / 6;
+  int len = (int)(sqrt(xlen*xlen + ylen*ylen) + 0.5);
+  double theta = atan(ylen / xlen) + M_PI/6.0;
 
-  int deltax = (len / 3.0) * sin(theta);
-  int deltay = (len / 3.0) * cos (theta);
+  int deltax = (int)( (len / 3.0) * sin(theta) );
+  int deltay = (int)( (len / 3.0) * cos(theta) );
 
   if (p2.x < p1.x) {
     deltax *= -1;
@@ -85,17 +89,22 @@ void iterate(node* n)
   list_insert(current, new);
 }
 
+/*
+ * Creates a linked list representing an equilateral triangle that
+ * will fill the provided SDL_Surface, positioned opitmally for
+ * koch snowflake iteration.
+ */
 list* generate(SDL_Surface* screen) {
   point top, left, right;
 
   list* ll = list_create();
   
-  top.y = 1.0 / 4 * screen->h - screen->h/12;
-  left.y = 3.0 / 4 * screen->h - screen->h/12;
+  top.y = screen->h / 4 - screen->h/12;
+  left.y = 3 * screen->h / 4 - screen->h/12;
   right.y = left.y;
 
-  left.x = 1.0 /4 * screen->w;
-  right.x = 3.0 / 4 * screen->w;
+  left.x = screen->w / 4;
+  right.x = 3 * screen->w / 4;
   top.x = screen->w / 2;
   
   
@@ -130,7 +139,7 @@ int main()
 {
   SDL_Surface *screen;
 
-  srand(time(NULL));
+  srand((unsigned int) time(NULL));
   if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
 
   if (!(screen = SDL_SetVideoMode(WIDTH, HEIGHT, DEPTH, SDL_FULLSCREEN))) {
